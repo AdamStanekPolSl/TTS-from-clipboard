@@ -1,0 +1,3 @@
+@echo off
+echo Starting python-no-gui app...
+python ./main.py
