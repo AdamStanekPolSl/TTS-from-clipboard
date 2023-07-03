@@ -9,12 +9,7 @@ if %errorlevel% equ 0 (
     start ms-windows-store://pdp/?ProductId=9NRWMJP3717K
     echo Please install Python 3.11 from the Microsoft Store.
     pause
-    python --version >nul 2>&1
-    if %errorlevel% equ 0 (
-        echo Python is succesfully installed.
-    ) else (
-        echo Python is not installed. Try again.
-        pause
+    %0
 	exit
     )
 )

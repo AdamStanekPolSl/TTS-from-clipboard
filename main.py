@@ -5,7 +5,7 @@ import pyperclip
 import time
 
 
-debugging = 1
+debugging = False
 
 
 def debugPrint(text):
@@ -15,21 +15,27 @@ def debugPrint(text):
 
 def removeNewlines(text):
     debugPrint("Text is cutted for lines.")
-    lines = text.split('\n')
+    lines = list(filter(None, text.split('\n')))
+    debugPrint(lines)
     toReturn = []
     i = 0
+
     while len(lines)-1 > i:
         debugPrint(f'i = {i}')
+
         if lines[i+1][0].islower():
             debugPrint(f'Line {lines[i+1]} starts with lowercase. Newline persisted.')
             toReturn.append(lines[i].rstrip())
         else:
             debugPrint(f'Line {lines[i+1]} starts with uppercase. No newline.')
             toReturn.append(lines[i])
+
         i += 1
+
     toReturn.append(lines[i])
     finalText = ' '.join(toReturn)
     debugPrint(f'This is final text:\n{finalText}')
+
     return finalText
 
 
