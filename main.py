@@ -3,9 +3,10 @@
 import pyttsx3
 import pyperclip
 import time
+from deep_translator import GoogleTranslator
 
 
-debugging = 1
+debugging = 0
 
 
 def debugPrint(text):
@@ -51,7 +52,7 @@ def monitorClipboard():
 
         if text != oldText:
             debugPrint("New text differs. It will be said...")
-            tts(text)
+            tts(GoogleTranslator(source='auto', target='pl').translate(text))
             oldText = text
             debugPrint(f"Now the old text is:\n{oldText}")
 
@@ -62,7 +63,7 @@ def monitorClipboard():
 if __name__ == '__main__':
     engine = pyttsx3.init()
     engine.setProperty('voice', 'pl')
-    engine.setProperty('rate', 170)
+    engine.setProperty('rate', 145)
 
     monitorClipboard()
 

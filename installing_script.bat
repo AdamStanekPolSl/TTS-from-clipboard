@@ -27,5 +27,9 @@ echo Installing pyperclip...
 pip install pyperclip
 echo pyperclip installed.
 
+echo Installing deep-translator
+pip install -U deep-translator
+echo deep-translator installed.
+
 echo All dependencies installed.
 pause
