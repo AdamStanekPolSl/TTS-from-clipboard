@@ -3,15 +3,48 @@
 import pyttsx3
 import pyperclip
 import time
+import psutil
+import keyboard
+import sys
+import os
 
 
-debugging = False
+debugging = True
 
 
 def debugPrint(text):
     if debugging:
         print(text)
 
+def getProcess(processName):
+    for proc in psutil.process_iter(['pid', 'name']):
+        if proc.info['name'] == processName:
+            debugPrint(f"Found process: {processName} (PID: {proc.info['pid']})")
+            return proc
+    debugPrint(f"Process {processName} not found.")
+    return None        
+
+def freezeProcess(proc):
+    time.sleep(0.3)
+    try:    
+        debugPrint(f"Freezing process: {proc.info['name']} (PID: {proc.info['pid']})")
+        proc.suspend()  # Suspend (freeze) the process
+    except:
+        debugPrint(f'Cannot freeze proccess.')
+
+def unfreezeProcess(proc):
+    try:
+        debugPrint(f"Unfreezing process: {proc.name()} (PID: {proc.pid})")
+        proc.resume()  # Resume (unfreeze) the process
+    except:
+        debugPrint(f'Cannot unfreeze proccess.')
+
+# refactor needed
+def onHotKeyUnfreeze(proc):
+    if proc.status() == 'stopped':
+        unfreezeProcess(proc)
+    else:
+        keyboard.press_and_release('esc')
 
 def removeNewlines(text):
     debugPrint("Text is cutted for lines.")
@@ -47,7 +80,7 @@ def tts(text):
     engine.runAndWait()
 
 
-def monitorClipboard():
+def monitorClipboard(gameProcess):
     oldText = pyperclip.paste()
     debugPrint(f"Old text is:\n{oldText}")
 
@@ -61,16 +94,22 @@ def monitorClipboard():
             oldText = text
             debugPrint(f"Now the old text is:\n{oldText}")
 
+            unfreezeProcess(gameProcess)
+
         time.sleep(1)
 
 
 
 if __name__ == '__main__':
+    gameProc=getProcess(os.path.relpath(sys.argv[1], os.path.dirname(os.path.abspath(__file__))))
+    keyboard.add_hotkey('shift+win+t', lambda: freezeProcess(gameProc))
+    keyboard.add_hotkey('esc', lambda: unfreezeProcess(gameProc), suppress=False)
+
     engine = pyttsx3.init()
     engine.setProperty('voice', 'pl')
     engine.setProperty('rate', 170)
 
-    monitorClipboard()
+    monitorClipboard(gameProc)
 
 
 
