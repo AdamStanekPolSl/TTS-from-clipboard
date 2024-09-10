@@ -14,13 +14,7 @@ if %errorlevel% equ 0 (
     )
 )
 
-echo Installing pyttsx3...
-pip install pyttsx3
-echo pyttsx3 installed.
-
-echo Installing pyperclip...
-pip install pyperclip
-echo pyperclip installed.
+pip install -r requirements.txt
 
 echo All dependencies installed.
 pause
