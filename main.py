@@ -16,21 +16,25 @@ def debugPrint(text):
     if debugging:
         print(text)
 
-def getProcess(processName):
-    for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'] == processName:
-            debugPrint(f"Found process: {processName} (PID: {proc.info['pid']})")
-            return proc
-    debugPrint(f"Process {processName} not found.")
-    return None        
+
+def getProcess(processName, waitFor=10):
+    while True:
+        print(f"Searching for {processName} process...")
+        for proc in psutil.process_iter(['pid', 'name']):
+            if proc.info['name'] == processName:
+                debugPrint(f"Found process: {processName} (PID: {proc.info['pid']})")
+                return proc
+        debugPrint(f"Process {processName} not found. Next atempt in {waitFor} seconds.")
+        time.sleep(waitFor)
+
 
 def freezeProcess(proc):
-    time.sleep(0.3)
     try:    
         debugPrint(f"Freezing process: {proc.info['name']} (PID: {proc.info['pid']})")
         proc.suspend()  # Suspend (freeze) the process
     except:
         debugPrint(f'Cannot freeze proccess.')
+
 
 def unfreezeProcess(proc):
     try:
@@ -39,12 +43,25 @@ def unfreezeProcess(proc):
     except:
         debugPrint(f'Cannot unfreeze proccess.')
 
-# refactor needed
-def onHotKeyUnfreeze(proc):
-    if proc.status() == 'stopped':
-        unfreezeProcess(proc)
-    else:
-        keyboard.press_and_release('esc')
+
+def onHotKeyFreeze(proc):
+    keyboard.send('shift+win+t')
+
+    time.sleep(0.4)
+
+    status=proc.status()
+    if status != "stopped":
+        freezeProcess(proc)
+
+def onHotKeyUnfreeze(proc, key):
+    status=proc.status()
+    unfreezeProcess(proc)
+
+    if status != 'stopped':
+        debugPrint(f"Process is {status}. Sending {key}.")
+
+        keyboard.send(key)   
+
 
 def removeNewlines(text):
     debugPrint("Text is cutted for lines.")
@@ -73,7 +90,7 @@ def removeNewlines(text):
 
 
 def tts(text):
-    print("Hello from TTS function. Starting the speech...")
+    debugPrint("Hello from TTS function. Starting the speech...")
 
     toSay = removeNewlines(text)
     engine.say(toSay)
@@ -101,10 +118,12 @@ def monitorClipboard(gameProcess):
 
 
 if __name__ == '__main__':
-    gameProc=getProcess(os.path.relpath(sys.argv[1], os.path.dirname(os.path.abspath(__file__))))
-    keyboard.add_hotkey('shift+win+t', lambda: freezeProcess(gameProc))
-    keyboard.add_hotkey('esc', lambda: unfreezeProcess(gameProc), suppress=False)
+    key="esc"
 
+    gameProc=getProcess(os.path.relpath(sys.argv[1], os.path.dirname(os.path.abspath(__file__))))
+    keyboard.add_hotkey('shift+win+t', lambda: onHotKeyFreeze(gameProc), suppress=True)
+    keyboard.add_hotkey(key, lambda: onHotKeyUnfreeze(gameProc, key), suppress=True)
+    
     engine = pyttsx3.init()
     engine.setProperty('voice', 'pl')
     engine.setProperty('rate', 170)
